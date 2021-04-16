@@ -29,33 +29,37 @@ pref = AcousticsConstants.p_ref; % Pa, reference sound pressure
 fftn = round(Fs/res); % number of ffft point
 overlap = floor(0.5*fftn);
 
-tic
-parfor i = 1:length(filelist)
-    i
-    try
-    filename_i = [filelist(i).folder '\' filelist(i).name];
-    [channel,~] = f_ptiread(filename_i);
 
-    signals = [channel.Channel_1_Data,...
-                channel.Channel_2_Data,...
-                channel.Channel_3_Data,...
-                channel.Channel_4_Data];
+i = 10;
+filename_i = [filelist(i).folder '\' filelist(i).name];
+[channel,~] = f_ptiread(filename_i);
 
-    % estimate power spectrum density
-    [psd,fn] = pwelch(signals,hann(fftn),overlap,fftn,Fs,'psd');
-    
-    % single precision to save storage
-    psd = single(psd);
-    savedir = append('R:\CMPH-Windfarm Field Study\Duc Phuc Nguyen\',...
-                        '3. Spectrum quantification\Hallett_spectrum_mat');
-                    
-    % save results  to the savedir directory              
-    utils.parsave([savedir '\spec-' num2str(i) '.mat'], psd)
-    catch
-        i
-    end
-end
-toc
+signals = [channel.Channel_1_Data,...
+            channel.Channel_2_Data,...
+            channel.Channel_3_Data,...
+            channel.Channel_4_Data];
+
+% estimate power spectrum density
+[psd,fn] = pwelch(signals,hann(fftn),overlap,fftn,Fs,'psd');
+
+% single precision to save storage
+psd = single(psd);
+savedir = append('R:\CMPH-Windfarm Field Study\Duc Phuc Nguyen\',...
+                    '3. Spectrum quantification\Hallett_spectrum_mat');
+
+% save results  to the savedir directory              
+%utils.parsave([savedir '\spec-' num2str(i) '.mat'], psd)
+spl = 20*log10(sqrt(psd(:,4))/pref);
+plot(fn, spl)
+set(gca, 'XScale', 'log')
+
+%% Spectrogram plot
+x = channel.Channel_4_Data;
+
+fs = 8192;
+spectrogram(x,hann(fftn),4096,fftn,fs,'yaxis')
+%ax = gca;
+%ax.YScale = 'log';
 
 
 

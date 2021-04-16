@@ -24,13 +24,11 @@ load([pwd '/output/filelist.mat']); % if available read it from output folder
 %% Narrow band spectrum analysis
 
 Fs = 8192; % Hz, sampling frequency
-res = 0.1; % Hz, frequency resolution
-pref = AcousticsConstants.p_ref; % Pa, reference sound pressure
-fftn = round(Fs/res); % number of ffft point
-overlap = floor(0.5*fftn);
 
+SpecShape = zeros(length(filelist),11);
 tic
 parfor i = 1:length(filelist)
+
     try
     filename_i = [filelist(i).folder '\' filelist(i).name];
     [channel,~] = f_ptiread(filename_i);
@@ -40,20 +38,21 @@ parfor i = 1:length(filelist)
                 channel.Channel_3_Data,...
                 channel.Channel_4_Data];
 
-    % estimate power spectrum density
-    [psd,fn] = pwelch(signals,hann(fftn),overlap,fftn,Fs,'psd');
     
-    % single precision to save storage
-    psd = single(psd);
-    savedir = append('R:\CMPH-Windfarm Field Study\Duc Phuc Nguyen\',...
-                        '3. Spectrum quantification\Hallett_spectrum_mat');
-                    
+    
+    SpecShape(i,:) = spectral_descriptor(signals(:,4), Fs);
+    
+           
     % save results  to the savedir directory              
-    utils.parsave([savedir '\spec-' num2str(i) '.mat'], psd)
+    %utils.parsave([savedir '\spec-' num2str(i) '.mat'], psd)
     catch
         i
     end
 end
+
+savedir = append('R:\CMPH-Windfarm Field Study\Duc Phuc Nguyen\',...
+                    '3. Spectrum quantification\Hallett_spectrum_shape');
+save([savedir '\specShape.mat'], 'SpecShape');
 toc
 
 

@@ -118,5 +118,6 @@ for i=1:numchannels
 end
 
 %toc
+fclose(fid);
 end
 
